@@ -1,0 +1,7 @@
+*.vscode/
+*.o
+asan_main
+main
+tests_run
+build/
+*.dSYM/
