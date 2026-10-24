@@ -5,6 +5,8 @@
 #include <stdexcept>
 #include <cstddef>
 #include <utility>
+#include <algorithm>
+#include "Stack.hpp"
 
 template<typename T>
 class BinaryTree{
@@ -13,11 +15,21 @@ private:
         Node *left;
         Node *right;
         Node *parent;
-
         T value;
+        int height;
 
-        Node(const T &value_) : left(nullptr), right(nullptr), parent(nullptr), value(value_) {}
+        Node(const T &value_) : left(nullptr), right(nullptr), parent(nullptr), value(value_), height(0) {}
     };
+
+    void Clear(Node *node) {
+        if (node == nullptr)
+            return;
+
+        Clear(node->right);
+        Clear(node->left);
+
+        delete node;
+    }
 
     void Transplant(Node *old_node, Node *new_node) {    
         if (new_node != nullptr)
@@ -49,6 +61,7 @@ public:
                 return;   
 
             root = new Node(other.root->value);
+            root->height = other.root->height;
             MakeTree(root, other.root);
             size = other.size;
         }
@@ -79,6 +92,7 @@ public:
                     current->left = new Node(value);
                     current->left->parent = current;
                     size++;
+                    UpdateHeight(current->left);
                     return;
                 }
                 current = current->left;
@@ -89,6 +103,7 @@ public:
                     current->right = new Node(value);
                     current->right->parent = current;
                     size++;
+                    UpdateHeight(current->right);
                     return;
                 }
                 current = current->right;
@@ -125,16 +140,20 @@ public:
 
         if (current->left == nullptr && current->right == nullptr) {
             Transplant(current, nullptr);
+            UpdateHeight(current->parent);
             delete current;
+            
         }
 
         else if (current->left && current->right == nullptr) {
             Transplant(current, current->left);
+            UpdateHeight(current->parent);
             delete current;
         }
         
         else if (current->left == nullptr && current->right) {
             Transplant(current, current->right);
+            UpdateHeight(current->parent);
             delete current;
         }
 
@@ -142,6 +161,7 @@ public:
             Node *successor = Successor(current);
             current->value = successor->value;
             Transplant(successor, successor->right);
+            UpdateHeight(successor->parent);
             delete successor;
         }
         size--;
@@ -185,11 +205,58 @@ public:
         return root;
     }
 
+    void UpdateHeight(Node *current) {
+        while (current) {
+            int height_left, height_right;
+            height_left = GetHeight(current->left);
+            height_right = GetHeight(current->right);
+            current->height = std::max(height_left, height_right) + 1;
+            current = current->parent;
+        }
+    }
+
     BinaryTree& operator=(BinaryTree other) {
         std::swap(size, other.size);
         std::swap(root, other.root);
         return *this;
     }
+
+    int GetBalanceFactor(Node *node) const {
+        if (node == nullptr)
+            return 0;
+        return GetHeight(node->left) - GetHeight(node->right);
+    }
+
+    /*void RotateRight(Node *&root) {
+        Node *y = root;
+        Node *root_right;
+        root = root->left;
+        root_right = root->right;
+        root->right = y;
+        root->right->parent = root;
+        root->right->left = root_right;
+        root->right->left->parent = root->right;
+        root->parent = nullptr;
+    }*/
+
+    /*void RotateRight(Node *&node) {
+        if (node == nullptr || node->left == nullptr)
+            return;
+        if (node->left)
+            node = node->left;
+    
+        if (node != root)
+            node->parent->parent = node;
+        else {
+
+        }
+        Node *temp = node->right;
+        node->right = node->parent;
+        node->parent = nullptr;
+        node->right->left = temp;
+        if (temp)
+            temp->parent = node->right; 
+    }*/
 
 
     void MakeTree(Node *node, Node *other_tree_node) {
@@ -200,12 +267,14 @@ public:
         if (other_tree_node->left) {
             node->left = new Node(other_tree_node->left->value);
             node->left->parent = node;
+            node->left->height = other_tree_node->left->height;
             MakeTree(node->left, other_tree_node->left);
         }
 
         if (other_tree_node->right) {
             node->right = new Node(other_tree_node->right->value);
             node->right->parent = node;
+            node->right->height = other_tree_node->right->height;
             MakeTree(node->right, other_tree_node->right);
         }
     }
@@ -215,33 +284,114 @@ public:
             return true;
         return false;
     }
-
-    void Clear(Node *node) {
-        if (node == nullptr)
-            return;
-
-        Clear(node->right);
-        Clear(node->left);
-
-        size = 0;
-
-        delete node;
-    }
     
     void InorderedTreeWalk(Node *x) const {
         if (x != nullptr) {
             InorderedTreeWalk(x->left);
-            std::cout << x->value << ' ';
-            if (x->parent)
-                 std::cout << "parent: " << x->parent->value << std::endl;
-            else
-                std::cout << std::endl;
             InorderedTreeWalk(x->right);
+        }
+    }
+
+    void InorderedTreeWalkIterative(Node *current) const {
+        Stack<Node*> stack;
+
+        while (current != nullptr || !stack.IsEmpty()) {
+            if (current != nullptr) {
+                stack.Push(current);
+                current = current->left;
+            }
+            else {
+                current = stack.Get();
+                stack.Pop();
+                std::cout << current->value << ' ';
+                current = current->right;
+            }
         }
     }
 
     size_t GetSize() const {
         return size;
+    }
+
+    int GetHeight(Node *node) const {
+        if (node == nullptr)
+            return -1;
+        return node->height;
+    }
+
+    BinaryTree Where(bool (*predicate)(const T&)) const {
+        BinaryTree result;
+        Stack<Node*> stack;
+        Node *current = root;
+        
+        while (current != nullptr || !stack.IsEmpty()) {
+            if (current != nullptr) {
+                stack.Push(current);
+                current = current->left;
+            }
+            else {
+                current = stack.Get();
+                stack.Pop();
+            
+                if (predicate(current->value))
+                    result.Insert(current->value);
+                current = current->right;
+            }
+        }
+
+        return result;
+    }
+
+    BinaryTree Map(T (*func)(const T&)) const {
+        BinaryTree result;
+        Stack<Node*> stack;
+        Node *current = root;
+
+        while (current != nullptr || !stack.IsEmpty()) {
+            if (current != nullptr) {
+                stack.Push(current);
+                current = current->left;
+            }
+            else {
+                current = stack.Get();
+                stack.Pop();
+
+                result.Insert(func(current->value));
+
+                current = current->right;
+            }
+        }
+        
+        return result;
+    }
+
+    T Reduce(T (*func)(T, const T&), T initial) const {
+        T result = initial;
+
+        Stack<Node*> stack;
+        Node *current = root;
+        
+        while (current != nullptr || !stack.IsEmpty()) {
+            if (current != nullptr) {
+                stack.Push(current);
+                current = current->left;
+            }
+            else {
+                current = stack.Get();
+                stack.Pop();
+                result = func(result, current->value);
+                current = current->right;
+            }
+        }
+
+        return result;
+    }
+
+
+    void Clear() {
+        Clear(root);
+        size = 0;
+        root = nullptr;
     }
 
     ~BinaryTree() {

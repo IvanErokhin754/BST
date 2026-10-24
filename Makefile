@@ -13,7 +13,8 @@ SRC = src/main.cpp
 APP = main
 
 
-TEST_SRC = tests/test_BinaryTree.cpp
+TEST_SRC = tests/test_Stack.cpp \
+		   tests/test_BinaryTree.cpp 
 
 TEST_BIN = tests_run
 
