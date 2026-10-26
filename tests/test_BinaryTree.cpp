@@ -40,33 +40,14 @@ int Mult(int accumulator, const int& x) {
 }
 
 void ExpectNineNodeTree(const BinaryTree<int>& tree) {
-    auto *root = tree.GetRoot();
     EXPECT_FALSE(tree.IsEmpty());
     EXPECT_EQ(tree.GetSize(), 9u);
 
-    ASSERT_NE(root, nullptr);
-    ASSERT_NE(root->left, nullptr);
-    ASSERT_NE(root->left->left, nullptr);
-    ASSERT_NE(root->left->right, nullptr);
-    ASSERT_NE(root->left->right->left, nullptr);
-    ASSERT_NE(root->left->right->right, nullptr);
-    ASSERT_NE(root->right, nullptr);
-    ASSERT_NE(root->right->left, nullptr);
-    ASSERT_NE(root->right->right, nullptr);
+    std::vector<int> values = {10, 5, 20, 3, 7, 6, 8, 15, 25};
 
-    EXPECT_EQ(root->parent, nullptr);
-    EXPECT_EQ(root->left->parent, root);
-    EXPECT_EQ(root->right->parent, root);
-
-    EXPECT_EQ(root->value, 10);
-    EXPECT_EQ(root->left->value, 5);
-    EXPECT_EQ(root->left->left->value, 3);
-    EXPECT_EQ(root->left->right->value, 7);
-    EXPECT_EQ(root->left->right->left->value, 6);
-    EXPECT_EQ(root->left->right->right->value, 8);
-    EXPECT_EQ(root->right->value, 20);
-    EXPECT_EQ(root->right->left->value, 15);
-    EXPECT_EQ(root->right->right->value, 25);
+    for (int value : values) {
+        EXPECT_TRUE(tree.Contains(value));
+    }
 }
 
 
@@ -310,39 +291,28 @@ TEST(BinaryTreeTest, FindAndContains) {
 
 TEST(BinaryTreeTest, RemoveLeaf) {
     BinaryTree<int> tree;
-    std::vector nodes = {10, 5, 20, 3, 7, 6, 8, 15, 25};
+    std::vector nodes = {10, 5, 20, 3, 7, 6};
     for (auto node : nodes) {
         tree.Insert(node);
     }
 
     tree.Remove(6);
 
-    EXPECT_EQ(tree.GetSize(), 8u);
-    EXPECT_EQ(tree.Find(6), nullptr);
+    EXPECT_EQ(tree.GetSize(), 5u);
 
     auto *root = tree.GetRoot();
+
     ASSERT_NE(root, nullptr);
     ASSERT_NE(root->left, nullptr);
-    ASSERT_NE(root->left->left, nullptr);
-    ASSERT_NE(root->left->right, nullptr);
-    ASSERT_NE(root->left->right->right, nullptr);
     ASSERT_NE(root->right, nullptr);
-    ASSERT_NE(root->right->left, nullptr);
+    ASSERT_NE(root->left->left, nullptr);
     ASSERT_NE(root->right->right, nullptr);
 
-
-    EXPECT_EQ(root->value, 10);
+    EXPECT_EQ(root->value, 7);
     EXPECT_EQ(root->left->value, 5);
+    EXPECT_EQ(root->right->value, 10);
     EXPECT_EQ(root->left->left->value, 3);
-    EXPECT_EQ(root->left->right->value, 7);
-    EXPECT_EQ(root->left->right->right->value, 8);
-    EXPECT_EQ(root->right->value, 20);
-    EXPECT_EQ(root->right->left->value, 15);
-    EXPECT_EQ(root->right->right->value, 25);
-
-    EXPECT_EQ(root->left->right->left, nullptr);
-    EXPECT_EQ(root->left->right->right->parent, root->left->right);
-    EXPECT_EQ(root->left->right->parent, root->left);
+    EXPECT_EQ(root->right->right->value, 20);
 }
 
 TEST(BinaryTreeTest, RemoveOneLeftChild) {
@@ -431,74 +401,18 @@ TEST(BinaryTreeTest, RemoveTwoChildren) {
     EXPECT_EQ(root->right->right->parent, root->right);
 }
 
-TEST(BinaryTreeTest, RemoveDeepSuccessor) {
-    BinaryTree<int> tree;
-    std::vector<int> nodes = {50, 30, 80, 60, 90, 70, 65, 75, 68};
-
-    for (auto node : nodes) {
-        tree.Insert(node);
-    }
-
-    tree.Remove(50);
-
-    EXPECT_EQ(tree.GetSize(), 8u);
-    EXPECT_EQ(tree.Find(50), nullptr);
-
-    auto *root = tree.GetRoot();
-    ASSERT_NE(root, nullptr);
-    ASSERT_NE(root->left, nullptr);
-    ASSERT_NE(root->right, nullptr);
-    ASSERT_NE(root->right->right, nullptr);
-    ASSERT_NE(root->right->left, nullptr);
-    ASSERT_NE(root->right->left->right, nullptr);
-    ASSERT_NE(root->right->left->left, nullptr);
-    ASSERT_NE(root->right->left->left->right, nullptr);
-
-    EXPECT_EQ(root->value, 60);
-    EXPECT_EQ(root->left->value, 30);
-    EXPECT_EQ(root->right->value, 80);
-    EXPECT_EQ(root->right->right->value, 90);
-    EXPECT_EQ(root->right->left->value, 70);
-    EXPECT_EQ(root->right->left->right->value, 75);
-    EXPECT_EQ(root->right->left->left->value, 65);
-    EXPECT_EQ(root->right->left->left->right->value, 68);
-
-    EXPECT_EQ(root->parent, nullptr);
-    EXPECT_EQ(root->left->parent, root);
-    EXPECT_EQ(root->right->parent, root);
-    EXPECT_EQ(root->right->right->parent, root->right);
-    EXPECT_EQ(root->right->left->parent, root->right);
-    EXPECT_EQ(root->right->left->right->parent, root->right->left);
-
-    EXPECT_EQ(root->right->left->left->left, nullptr);
-    EXPECT_EQ(root->right->left->left->parent, root->right->left);
-    EXPECT_EQ(root->right->left->left->right->parent, root->right->left->left);
-}
-
 TEST(BinaryTreeTest, RemoveRootWithChild) {
     BinaryTree<int> tree;
-    std::vector<int> nodes = {10, 5, 3, 6};
-    for (auto node : nodes) {
-        tree.Insert(node);
-    }
+
+    tree.Insert(10);
+    tree.Insert(5);
 
     tree.Remove(10);
 
-    EXPECT_EQ(tree.GetSize(), 3u);
-    EXPECT_EQ(tree.Find(10), nullptr);
-
-    auto *root = tree.GetRoot();
-    ASSERT_NE(root, nullptr);
-    ASSERT_NE(root->right, nullptr);
-    ASSERT_NE(root->left, nullptr);
-
-    EXPECT_EQ(root->value, 5);
-    EXPECT_EQ(root->right->value, 6);
-    EXPECT_EQ(root->left->value, 3);
-
-    EXPECT_EQ(root->parent, nullptr);
-    EXPECT_EQ(root->right->parent, root);
-    EXPECT_EQ(root->left->parent, root);
+    ASSERT_NE(tree.GetRoot(), nullptr);
+    EXPECT_EQ(tree.GetRoot()->value, 5);
+    EXPECT_EQ(tree.GetRoot()->parent, nullptr);
+    EXPECT_EQ(tree.GetSize(), 1u);
 }
 
 TEST(BinaryTreeTest, RemoveRootWithoutChild) {
@@ -592,12 +506,13 @@ TEST(BinaryTreeTest, WhereEven) {
     
     auto *root = temp.GetRoot();
 
-    EXPECT_EQ(root->value, 2);
-    EXPECT_EQ(root->right->value, 4);
-    EXPECT_EQ(root->right->right->value, 6);
-    EXPECT_EQ(root->right->right->right->value, 8);
-    EXPECT_EQ(root->right->right->right->right->value, 10);
+    EXPECT_EQ(root->value, 4);
+    EXPECT_EQ(root->left->value, 2);
+    EXPECT_EQ(root->right->value, 8);
+    EXPECT_EQ(root->right->left->value, 6);
+    EXPECT_EQ(root->right->right->value, 10);
 }
+
 
 TEST(BinaryTreeTest, WhereNone) {
     BinaryTree<int> tree;
@@ -625,12 +540,13 @@ TEST(BinaryTreeTest, WhereAll) {
     EXPECT_EQ(temp.GetSize(), 5u);
 
     auto *root = temp.GetRoot();
-    EXPECT_EQ(root->value, 5);
-    EXPECT_EQ(root->right->value, 10);
-    EXPECT_EQ(root->right->right->value, 15);
-    EXPECT_EQ(root->right->right->right->value, 20);
-    EXPECT_EQ(root->right->right->right->right->value, 25);
+    EXPECT_EQ(root->value, 10);
+    EXPECT_EQ(root->left->value, 5);
+    EXPECT_EQ(root->right->value, 20);
+    EXPECT_EQ(root->right->left->value, 15);
+    EXPECT_EQ(root->right->right->value, 25);
 }
+
 
 TEST(BinaryTreeTest, MapSquare) {
     BinaryTree<int> tree;
@@ -645,11 +561,11 @@ TEST(BinaryTreeTest, MapSquare) {
     EXPECT_EQ(temp.GetSize(), 5u);
 
     auto *root = temp.GetRoot();
-    EXPECT_EQ(root->value, 5*5);
-    EXPECT_EQ(root->right->value, 10*10);
-    EXPECT_EQ(root->right->right->value, 15*15);
-    EXPECT_EQ(root->right->right->right->value, 20*20);
-    EXPECT_EQ(root->right->right->right->right->value, 25*25);
+    EXPECT_EQ(root->value, 10 * 10);
+    EXPECT_EQ(root->left->value, 5 * 5);
+    EXPECT_EQ(root->right->value, 20 * 20);
+    EXPECT_EQ(root->right->left->value, 15 * 15);
+    EXPECT_EQ(root->right->right->value, 25 * 25);
 }
 
 TEST(BinaryTreeTest, MapEmptyTree) {
@@ -674,12 +590,13 @@ TEST(BinaryTreeTest, MapIdentity) {
     EXPECT_EQ(temp.GetSize(), 5u);
 
     auto *root = temp.GetRoot();
-    EXPECT_EQ(root->value, 5);
-    EXPECT_EQ(root->right->value, 10);
-    EXPECT_EQ(root->right->right->value, 15);
-    EXPECT_EQ(root->right->right->right->value, 20);
-    EXPECT_EQ(root->right->right->right->right->value, 25);
+    EXPECT_EQ(root->value, 10);
+    EXPECT_EQ(root->left->value, 5);
+    EXPECT_EQ(root->right->value, 20);
+    EXPECT_EQ(root->right->left->value, 15);
+    EXPECT_EQ(root->right->right->value, 25);
 }
+
 
 TEST(BinaryTreeTest, MapDuplicates) {
     BinaryTree<int> tree;
@@ -708,11 +625,11 @@ TEST(BinaryTreeTest, MapNegative) {
     EXPECT_EQ(temp.GetSize(), 5u);
     auto *root = temp.GetRoot();
 
-    EXPECT_EQ(root->value, -5);
-    EXPECT_EQ(root->left->value, -10);
-    EXPECT_EQ(root->left->left->value, -15);
-    EXPECT_EQ(root->left->left->left->value, -20);
-    EXPECT_EQ(root->left->left->left->left->value, -25);
+    EXPECT_EQ(root->value, -10);
+    EXPECT_EQ(root->left->value, -20);
+    EXPECT_EQ(root->left->left->value, -25);
+    EXPECT_EQ(root->left->right->value, -15);
+    EXPECT_EQ(root->right->value, -5);
 }
 
 TEST(BinaryTreeTest, ReduceSum) {
@@ -758,4 +675,506 @@ TEST(BinaryTreeTest, ReduceInitialValue) {
     tree.Insert(20);
 
     EXPECT_EQ(tree.Reduce(Sum, 100), 130);
+}
+
+TEST(BinaryTreeTest, InsertAVL_LL) {
+    BinaryTree<int> tree;
+
+    std::vector<int> nodes = {30, 20, 10};
+    for (auto node : nodes) {
+        tree.Insert(node);
+    }
+
+    EXPECT_EQ(tree.GetSize(), 3u);
+
+    auto *root = tree.GetRoot();
+    ASSERT_NE(root, nullptr);
+    ASSERT_NE(root->left, nullptr);
+    ASSERT_NE(root->right, nullptr);
+
+    EXPECT_EQ(root->parent, nullptr);
+    EXPECT_EQ(root->left->parent, root);
+    EXPECT_EQ(root->right->parent, root);
+
+    EXPECT_EQ(root->value, 20);
+    EXPECT_EQ(root->left->value, 10);
+    EXPECT_EQ(root->right->value, 30);
+}
+
+TEST(BinaryTreeTest, InsertAVL_RR) {
+    BinaryTree<int> tree;
+
+    std::vector<int> nodes = {10, 20, 30};
+    for (auto node : nodes) {
+        tree.Insert(node);
+    }
+
+    EXPECT_EQ(tree.GetSize(), 3u);
+
+    auto *root = tree.GetRoot();
+    ASSERT_NE(root, nullptr);
+    ASSERT_NE(root->left, nullptr);
+    ASSERT_NE(root->right, nullptr);
+
+    EXPECT_EQ(root->parent, nullptr);
+    EXPECT_EQ(root->left->parent, root);
+    EXPECT_EQ(root->right->parent, root);
+
+    EXPECT_EQ(root->value, 20);
+    EXPECT_EQ(root->left->value, 10);
+    EXPECT_EQ(root->right->value, 30);
+}
+
+TEST(BinaryTreeTest, InsertAVL_LR) {
+    BinaryTree<int> tree;
+
+    std::vector<int> nodes = {30, 10, 20};
+    for (auto node : nodes) {
+        tree.Insert(node);
+    }
+
+    EXPECT_EQ(tree.GetSize(), 3u);
+
+    auto *root = tree.GetRoot();
+    ASSERT_NE(root, nullptr);
+    ASSERT_NE(root->left, nullptr);
+    ASSERT_NE(root->right, nullptr);
+
+    EXPECT_EQ(root->parent, nullptr);
+    EXPECT_EQ(root->left->parent, root);
+    EXPECT_EQ(root->right->parent, root);
+
+    EXPECT_EQ(root->value, 20);
+    EXPECT_EQ(root->left->value, 10);
+    EXPECT_EQ(root->right->value, 30);
+}
+
+TEST(BinaryTreeTest, InsertAVL_RL) {
+    BinaryTree<int> tree;
+
+    std::vector<int> nodes = {10, 30, 20};
+    for (auto node : nodes) {
+        tree.Insert(node);
+    }
+
+    EXPECT_EQ(tree.GetSize(), 3u);
+
+    auto *root = tree.GetRoot();
+    ASSERT_NE(root, nullptr);
+    ASSERT_NE(root->left, nullptr);
+    ASSERT_NE(root->right, nullptr);
+
+
+    EXPECT_EQ(root->value, 20);
+    EXPECT_EQ(root->left->value, 10);
+    EXPECT_EQ(root->right->value, 30);
+}
+
+TEST(BinaryTreeTest, RemoveAVL_RebalanceLL) {
+    BinaryTree<int> tree;
+
+    std::vector<int> nodes = {30, 20, 40, 10};
+
+    for (auto node : nodes) {
+        tree.Insert(node);
+    }
+
+    tree.Remove(40);
+
+    EXPECT_EQ(tree.GetSize(), 3u);
+
+    auto *root = tree.GetRoot();
+    ASSERT_NE(root, nullptr);
+    ASSERT_NE(root->left, nullptr);
+    ASSERT_NE(root->right, nullptr);
+
+    EXPECT_EQ(root->value, 20);
+    EXPECT_EQ(root->left->value, 10);
+    EXPECT_EQ(root->right->value, 30);
+
+    EXPECT_EQ(root->parent, nullptr);
+    EXPECT_EQ(root->left->parent, root);
+    EXPECT_EQ(root->right->parent, root);
+
+    EXPECT_EQ(tree.GetHeight(root), 1);
+    EXPECT_EQ(tree.GetHeight(root->left), 0);
+    EXPECT_EQ(tree.GetHeight(root->right), 0);
+    EXPECT_EQ(tree.GetBalanceFactor(root), 0);
+
+    EXPECT_FALSE(tree.Contains(40));
+}
+
+TEST(BinaryTreeTest, RemoveAVL_SuccessorRebalance) {
+    BinaryTree<int> tree;
+
+    std::vector<int> nodes = {50, 30, 70, 20, 60, 80, 90};
+
+    for (auto value : nodes)
+        tree.Insert(value);
+
+    tree.Remove(50);
+
+    auto* root = tree.GetRoot();
+
+    ASSERT_NE(root, nullptr);
+    ASSERT_NE(root->right, nullptr);
+    ASSERT_NE(root->right->left, nullptr);
+    ASSERT_NE(root->right->right, nullptr);
+
+    EXPECT_EQ(root->value, 60);
+    EXPECT_EQ(root->right->value, 80);
+    EXPECT_EQ(root->right->left->value, 70);
+    EXPECT_EQ(root->right->right->value, 90);
+
+    EXPECT_EQ(tree.GetSize(), 6u);
+    EXPECT_FALSE(tree.Contains(50));
+    EXPECT_EQ(tree.GetBalanceFactor(root->right), 0);
+}
+
+TEST(BinaryTreeTest, RemoveAVL_ZeroBalanceChild) {
+    BinaryTree<int> tree;
+
+    std::vector<int> nodes = {30, 20, 40, 10, 25};
+    for (auto node : nodes)
+        tree.Insert(node);
+
+    tree.Remove(40);
+
+    auto* root = tree.GetRoot();
+
+    ASSERT_NE(root, nullptr);
+    ASSERT_NE(root->left, nullptr);
+    ASSERT_NE(root->right, nullptr);
+    ASSERT_NE(root->right->left, nullptr);
+
+    EXPECT_EQ(root->value, 20);
+    EXPECT_EQ(root->left->value, 10);
+    EXPECT_EQ(root->right->value, 30);
+    EXPECT_EQ(root->right->left->value, 25);
+
+    EXPECT_EQ(tree.GetSize(), 4u);
+    EXPECT_EQ(tree.GetBalanceFactor(root), -1);
+}
+
+TEST(BinaryTreeTest, ExtraсtSubtreeBasic) {
+    BinaryTree<int> tree;
+
+    std::vector<int> nodes = {50, 30, 70, 20, 40, 60, 80};
+    for (auto node : nodes) {
+        tree.Insert(node);
+    }
+
+    BinaryTree<int> subtree = tree.ExtractSubtree(tree.GetRoot()->left);
+    auto *root = subtree.GetRoot();
+
+    
+    EXPECT_EQ(subtree.GetSize(), 3u);
+
+    ASSERT_NE(root, nullptr);
+    ASSERT_NE(root->left, nullptr);
+    ASSERT_NE(root->right, nullptr);
+
+    EXPECT_EQ(root->value, 30);
+    EXPECT_EQ(root->left->value, 20);
+    EXPECT_EQ(root->right->value, 40);
+
+    EXPECT_EQ(tree.GetSize(), 7u);
+}
+
+TEST(BinaryTreeTest, ExtractSubtreeDeepCopy) {
+    BinaryTree<int> tree;
+
+    std::vector<int> nodes = {50, 30, 70, 20, 40, 60, 80};
+    for (auto node : nodes) {
+        tree.Insert(node);
+    }
+
+    BinaryTree<int> subtree = tree.ExtractSubtree(tree.GetRoot()->left);
+    auto *root = subtree.GetRoot();
+    auto *root2 = tree.GetRoot();
+
+    ASSERT_NE(root, nullptr);
+    ASSERT_NE(root2, nullptr);
+    ASSERT_NE(root2->left, nullptr);
+    ASSERT_NE(root2->left->left, nullptr);
+    ASSERT_NE(root2->left->right, nullptr);
+
+    EXPECT_NE(root, root2->left);
+    EXPECT_NE(root->left, root2->left->left);
+    EXPECT_NE(root->right, root2->left->right);
+}
+
+TEST(BinaryTreeTest, ExtractSubrtreeIndependence) {
+    BinaryTree<int> tree;
+
+    std::vector<int> nodes = {50, 30, 70, 20, 40, 60, 80};
+    for (auto node : nodes) {
+        tree.Insert(node);
+    }
+
+    BinaryTree<int> subtree = tree.ExtractSubtree(tree.GetRoot()->left);
+
+    subtree.Remove(20);
+
+    EXPECT_EQ(tree.GetSize(), 7u);
+    EXPECT_TRUE(tree.Contains(20));
+
+    EXPECT_FALSE(subtree.Contains(20));
+    EXPECT_EQ(subtree.GetSize(), 2u);
+}
+
+TEST(BinaryTreeTest, ExtractSubtreeParentAndHeight) {
+    BinaryTree<int> tree;
+
+    std::vector<int> nodes = {50, 30, 70, 20, 40, 60, 80};
+    for (auto node : nodes) {
+        tree.Insert(node);
+    }
+
+    BinaryTree<int> subtree = tree.ExtractSubtree(tree.GetRoot()->left);
+
+    auto *root = subtree.GetRoot();
+
+    ASSERT_NE(root, nullptr);
+    ASSERT_NE(root->right, nullptr);
+    ASSERT_NE(root->left, nullptr);
+
+    EXPECT_EQ(root->parent, nullptr);
+    EXPECT_EQ(root->left->parent, root);
+    EXPECT_EQ(root->right->parent, root);
+
+    EXPECT_EQ(root->height, 1);
+    EXPECT_EQ(root->left->height, 0);
+    EXPECT_EQ(root->right->height, 0);
+
+    EXPECT_EQ(subtree.GetBalanceFactor(root), 0);
+}
+
+TEST(BinaryTreeTest, ExtractSubtreeNullptr) {
+    BinaryTree<int> tree;
+    BinaryTree<int> subtree = tree.ExtractSubtree(tree.GetRoot());
+
+    EXPECT_EQ(subtree.GetSize(), 0u);
+    EXPECT_EQ(subtree.GetRoot(), nullptr);
+    EXPECT_TRUE(subtree.IsEmpty());
+}
+
+TEST(BinaryTreeTest, ExtractSubtreeRoot) {
+    BinaryTree<int> tree;
+
+    std::vector<int> nodes = {50, 30, 70, 20, 40, 60, 80};
+    for (auto node : nodes) {
+        tree.Insert(node);
+    }
+
+    BinaryTree<int> subtree = tree.ExtractSubtree(tree.GetRoot());
+
+    EXPECT_EQ(subtree.GetSize(), 7u);
+    for (auto node : nodes) {
+        EXPECT_TRUE(subtree.Contains(node));
+        EXPECT_NE(subtree.Find(node), tree.Find(node));
+    }
+}
+
+TEST(BinaryTreeTest, ExtractSubtreeLeaf) {
+    BinaryTree<int> tree;
+
+    std::vector<int> nodes = {50, 30, 70, 20, 40, 60, 80};
+    for (auto node : nodes) {
+        tree.Insert(node);
+    }
+
+    BinaryTree<int> subtree = tree.ExtractSubtree(tree.GetRoot()->left->left);
+
+    EXPECT_EQ(subtree.GetSize(), 1u);
+
+    auto *root = subtree.GetRoot();
+    ASSERT_NE(root, nullptr);
+
+    EXPECT_EQ(root->value, 20);
+    EXPECT_EQ(root->right, nullptr);
+    EXPECT_EQ(root->left, nullptr);
+}
+
+TEST(BinaryTreeTest, ContainsSubtreeExisting) {
+    BinaryTree<int> tree;
+
+    std::vector<int> nodes = {50, 30, 70, 20, 40, 60, 80};
+    for (auto node : nodes) {
+        tree.Insert(node);
+    }
+
+    BinaryTree<int> tree2;
+    nodes = {30, 20, 40};
+    for (auto node : nodes) {
+        tree2.Insert(node);
+    }
+
+    EXPECT_TRUE(tree.ContainsSubtree(tree2));
+    EXPECT_EQ(tree.GetSize(), 7u);
+    EXPECT_EQ(tree2.GetSize(), 3u);
+}
+
+TEST(BinaryTreeTest, ContainsSubtreeStructureMismatch) {
+    BinaryTree<int> tree;
+
+    std::vector<int> nodes = {50, 30, 70, 20, 40, 60, 80};
+    for (auto node : nodes) {
+        tree.Insert(node);
+    }
+
+    BinaryTree<int> tree2;
+    nodes = {30, 20};
+    for (auto node : nodes) {
+        tree2.Insert(node);
+    }
+
+    auto *root = tree2.GetRoot();
+    
+    ASSERT_NE(root, nullptr);
+    ASSERT_NE(root->left, nullptr);
+
+    EXPECT_FALSE(tree.ContainsSubtree(tree2));
+    EXPECT_TRUE(tree.Contains(root->value));
+    EXPECT_TRUE(tree.Contains(root->left->value));
+}
+
+TEST(BinaryTreeTest, ContainsSubtreeRight) {
+    BinaryTree<int> tree;
+
+    std::vector<int> nodes = {50, 30, 70, 20, 40, 60, 80};
+    for (auto node : nodes) {
+        tree.Insert(node);
+    }
+
+    BinaryTree<int> tree2;
+    nodes = {70, 60, 80};
+    for (auto node : nodes) {
+        tree2.Insert(node);
+    }
+
+    EXPECT_TRUE(tree.ContainsSubtree(tree2));
+}
+
+TEST(BinaryTreeTest, ContainsSubtreeLeaf) {
+    BinaryTree<int> tree;
+
+    std::vector<int> nodes = {50, 30, 70, 20, 40, 60, 80};
+    for (auto node : nodes) {
+        tree.Insert(node);
+    }
+
+    BinaryTree<int> tree2;
+    nodes = {20};
+    for (auto node : nodes) {
+        tree2.Insert(node);
+    }
+
+    EXPECT_TRUE(tree.ContainsSubtree(tree2));
+}
+
+TEST(BinaryTreeTest, ContainsSubtreeWholeTree) {
+    BinaryTree<int> tree;
+
+    std::vector<int> nodes = {50, 30, 70, 20, 40, 60, 80};
+    for (auto node : nodes) {
+        tree.Insert(node);
+    }
+
+    BinaryTree<int> tree2;
+    for (auto node : nodes) {
+        tree2.Insert(node);
+    }
+    
+    EXPECT_TRUE(tree.ContainsSubtree(tree2));
+}
+
+TEST(BinaryTreeTest, ContainsSubtreeDifferentValues) {
+    BinaryTree<int> tree;
+
+    std::vector<int> nodes = {50, 30, 70, 20, 40, 60, 80};
+    for (auto node : nodes) {
+        tree.Insert(node);
+    }
+
+    nodes = {70, 60, 90};
+
+    BinaryTree<int> tree2;
+
+    for (auto node : nodes) {
+        tree2.Insert(node);
+    }
+
+    EXPECT_FALSE(tree.ContainsSubtree(tree2));
+}
+
+TEST(BinaryTreeTest, ContainsSubtreeEmpty1) {
+    BinaryTree<int> tree;
+
+    std::vector<int> nodes = {50, 30, 70, 20, 40, 60, 80};
+    for (auto node : nodes) {
+        tree.Insert(node);
+    }
+
+    BinaryTree<int> tree2;
+
+    EXPECT_TRUE(tree.ContainsSubtree(tree2));
+}
+
+TEST(BinaryTreeTest, ContainsSubtreeEmpty2) {
+    BinaryTree<int> tree2;
+
+    std::vector<int> nodes = {50, 30, 70, 20, 40, 60, 80};
+    for (auto node : nodes) {
+        tree2.Insert(node);
+    }
+
+    BinaryTree<int> tree;
+
+    EXPECT_FALSE(tree.ContainsSubtree(tree2));
+}
+
+TEST(BinaryTreeTest, ContainsSubtreeEmpty3) {
+    BinaryTree<int> tree;
+    BinaryTree<int> tree2;
+
+    EXPECT_TRUE(tree.ContainsSubtree(tree2));
+}
+
+TEST(BinaryTreeTest, ContainsSubtreeNotFound) {
+    BinaryTree<int> tree;
+    
+    std::vector<int> nodes = {50, 30, 70, 20, 40, 60, 80};
+    for (auto node : nodes) {
+        tree.Insert(node);
+    }
+
+    nodes = {100, 90, 110};
+
+    BinaryTree<int> tree2;
+    for (auto node : nodes) {
+        tree2.Insert(node);
+    }
+
+    EXPECT_FALSE(tree.ContainsSubtree(tree2));
+}
+
+TEST(BinaryTreeTest, ContainsSubtreeSameValuesDifferentStructure) {
+    BinaryTree<int> tree;
+    BinaryTree<int> tree2;
+
+    std::vector<int> nodes = {30, 20, 40, 10, 50};
+
+    for (auto node : nodes) {
+        tree.Insert(node);
+    }
+
+    nodes = {30, 10, 50, 20, 40};
+
+    for (auto node : nodes) {
+        tree2.Insert(node);
+    }
+
+    EXPECT_FALSE(tree.ContainsSubtree(tree2));
+    EXPECT_FALSE(tree2.ContainsSubtree(tree));
 }

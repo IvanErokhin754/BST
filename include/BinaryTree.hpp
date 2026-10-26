@@ -93,6 +93,12 @@ public:
                     current->left->parent = current;
                     size++;
                     UpdateHeight(current->left);
+                    Node *tmp_current = current;
+                    while (tmp_current != nullptr) {
+                        Node *old_parent = tmp_current->parent;
+                        RebalanceAt(tmp_current);
+                        tmp_current = old_parent;
+                    }
                     return;
                 }
                 current = current->left;
@@ -104,6 +110,12 @@ public:
                     current->right->parent = current;
                     size++;
                     UpdateHeight(current->right);
+                    Node *tmp_current = current;
+                    while (tmp_current != nullptr) {
+                        Node *old_parent = tmp_current->parent;
+                        RebalanceAt(tmp_current);
+                        tmp_current = old_parent;
+                    }
                     return;
                 }
                 current = current->right;
@@ -141,6 +153,14 @@ public:
         if (current->left == nullptr && current->right == nullptr) {
             Transplant(current, nullptr);
             UpdateHeight(current->parent);
+
+            Node *tmp_current = current->parent;
+            while (tmp_current != nullptr) {
+                Node *old_parent = tmp_current->parent;
+                RebalanceAt(tmp_current);
+                tmp_current = old_parent;
+            }
+
             delete current;
             
         }
@@ -148,12 +168,28 @@ public:
         else if (current->left && current->right == nullptr) {
             Transplant(current, current->left);
             UpdateHeight(current->parent);
+
+            Node *tmp_current = current->parent;
+            while (tmp_current != nullptr) {
+                Node *old_parent = tmp_current->parent;
+                RebalanceAt(tmp_current);
+                tmp_current = old_parent;
+            }
+
             delete current;
         }
         
         else if (current->left == nullptr && current->right) {
             Transplant(current, current->right);
             UpdateHeight(current->parent);
+
+            Node *tmp_current = current->parent;
+            while (tmp_current != nullptr) {
+                Node *old_parent = tmp_current->parent;
+                RebalanceAt(tmp_current);
+                tmp_current = old_parent;
+            }
+
             delete current;
         }
 
@@ -162,6 +198,14 @@ public:
             current->value = successor->value;
             Transplant(successor, successor->right);
             UpdateHeight(successor->parent);
+
+            Node *tmp_current = successor->parent;
+            while (tmp_current != nullptr) {
+                Node *old_parent = tmp_current->parent;
+                RebalanceAt(tmp_current);
+                tmp_current = old_parent;
+            }
+            
             delete successor;
         }
         size--;
@@ -179,6 +223,10 @@ public:
         }
         
         return current;
+    }
+
+    void TESTROTATERIGHT() {
+        RotateRight(root);
     }
 
     bool Contains(const T& value) const {
@@ -199,6 +247,29 @@ public:
         }
 
         return false;
+    }
+
+    bool CompareSubtrees(const Node *a, const Node *b) const {
+        if (a == nullptr && b == nullptr)
+            return true;
+        else if (a == nullptr && b != nullptr)
+            return false;
+        else if (a != nullptr && b == nullptr)
+            return false;
+        else if (a->value != b->value)
+            return false;
+        return (CompareSubtrees(a->left, b->left) && CompareSubtrees(a->right, b->right));
+        
+    }
+
+    bool ContainsSubtree(const BinaryTree &other) const {
+        if (other.root == nullptr)
+            return true;
+        Node *this_subtree = Find(other.root->value);
+        if (this_subtree == nullptr)
+            return false;
+        
+        return CompareSubtrees(this_subtree, other.root);
     }
 
     Node* GetRoot() const {
@@ -227,39 +298,96 @@ public:
         return GetHeight(node->left) - GetHeight(node->right);
     }
 
-    /*void RotateRight(Node *&root) {
-        Node *y = root;
-        Node *root_right;
-        root = root->left;
-        root_right = root->right;
-        root->right = y;
-        root->right->parent = root;
-        root->right->left = root_right;
-        root->right->left->parent = root->right;
-        root->parent = nullptr;
-    }*/
-
-    /*void RotateRight(Node *&node) {
+    void RotateRight(Node *&node) {
         if (node == nullptr || node->left == nullptr)
             return;
-        if (node->left)
-            node = node->left;
-    
-        if (node != root)
-            node->parent->parent = node;
-        else {
+        Node *old_parent = node->parent;
+        Node *temp = node;
+        node = node->left;
+        node->parent = old_parent;
 
+        Node *temp2 = node->right;
+        node->right = temp;
+        temp->parent = node;
+        temp->left = temp2;
+        if (temp2)
+            temp2->parent = temp;
+
+        UpdateHeight(temp);    
+    }
+
+    void RotateLeft(Node *&node) {
+        if (node == nullptr || node->right == nullptr)
+            return;
+        Node *old_parent = node->parent;
+        Node *temp = node;
+        node = node->right;
+        node->parent = old_parent;
+
+        Node *temp2 = node->left;
+        node->left = temp;
+        temp->parent = node;
+        temp->right = temp2;
+        if (temp2)
+            temp2->parent = temp;
+
+        UpdateHeight(temp);
+    }
+
+    void Rebalance(Node *&node) {
+        if (GetBalanceFactor(node) > 1) {
+            Node *&child = node->left;
+            if (GetBalanceFactor(child) >= 0) {
+                RotateRight(node);
+            }
+            else {
+                RotateLeft(child);
+                RotateRight(node);
+            }
+        } 
+
+        else if (GetBalanceFactor(node) < -1) {
+            Node *&child = node->right;
+            if (GetBalanceFactor(child) > 0) {
+                RotateRight(child);
+                RotateLeft(node);
+            }
+            else {
+                RotateLeft(node);
+            }
         }
-        Node *temp = node->right;
-        node->right = node->parent;
-        node->parent = nullptr;
-        node->right->left = temp;
-        if (temp)
-            temp->parent = node->right; 
-    }*/
+    }
 
+    void RebalanceAt(Node *current) {
+        if (current->parent == nullptr)
+            Rebalance(root);
+        else if (current->parent->left == current) 
+            Rebalance(current->parent->left);
+        else 
+            Rebalance(current->parent->right);
+    }
 
-    void MakeTree(Node *node, Node *other_tree_node) {
+    void TESTROTATELEFTROOT() {
+        RotateLeft(root);
+    }
+
+    void TESTROTATELEFTRIGHT() {
+        RotateLeft(root->right);
+    }
+
+    void TESTROTATE() {
+        RotateRight(root);
+    }
+
+    void TESTROTATERIGHTLEFT() {
+        RotateRight(root->left);
+    }
+
+    void TESTROTATERIGHTRIGHT() {
+        RotateRight(root->right);
+    }
+
+    void MakeTree(Node *node, const Node *other_tree_node) const {
         if (other_tree_node->left == nullptr && other_tree_node->right == nullptr) {
             return;
         }
@@ -277,6 +405,27 @@ public:
             node->right->height = other_tree_node->right->height;
             MakeTree(node->right, other_tree_node->right);
         }
+    }
+    
+    BinaryTree ExtractSubtree(const Node *node) const {
+        if (node == nullptr)
+            return BinaryTree();
+
+        BinaryTree subtree;
+        subtree.root = new Node(node->value);
+        subtree.root->height = node->height;
+
+        MakeTree(subtree.root, node);
+        
+        subtree.size = CountNodes(node);
+
+        return subtree;
+    }
+
+    int CountNodes(const Node *root) const {
+        if (root == nullptr)
+            return 0;
+        return 1 + CountNodes(root->right) + CountNodes(root->left);
     }
 
     bool IsEmpty() const {
@@ -386,7 +535,6 @@ public:
 
         return result;
     }
-
 
     void Clear() {
         Clear(root);
