@@ -3,13 +3,13 @@
 
 #include <iostream>
 #include <stdexcept>
-#include <cstddef>
 #include <utility>
 #include <algorithm>
+#include <string>
 #include "Stack.hpp"
 
 template<typename T>
-class BinaryTree{
+class BinaryTree {
 private:
     struct Node {
         Node *left;
@@ -39,7 +39,6 @@ private:
             root = new_node;
             return;
         }
-        
     
         if (old_node->parent->left == old_node) {
             old_node->parent->left = new_node;
@@ -54,6 +53,53 @@ private:
     size_t size; 
 
 public:
+    class Enumerator {
+        private:
+            Node *current;
+        public:
+            Enumerator() : current(nullptr) {}
+            Enumerator(Node *node) : current(node) {
+                if (current != nullptr && current->left != nullptr)
+                    while (current->left != nullptr) {
+                        current = current->left;
+                    }
+            }
+
+            bool HasNext() {
+                return current != nullptr;
+            }
+
+            const T& Next() {
+                if (current == nullptr)
+                    throw std::out_of_range("Enumerator finished");
+                
+                Node *old_current = current;
+                if (current->right == nullptr) {
+                    while (current->parent != nullptr && current->parent->right == current) {
+                        current = current->parent;
+                    }
+
+                    current = current->parent;
+                }
+
+                else {
+                    if (current->right->left != nullptr) {
+                        current = current->right->left;
+                        while (current->left != nullptr) {
+                            current = current->left;
+                        }
+
+                    }
+
+                    else {
+                        current = current->right;
+                    }
+                }
+
+                return old_current->value;
+            }
+    };
+
     BinaryTree() : root(nullptr), size(0) {}
     BinaryTree(const BinaryTree& other) : root(nullptr), size(0) {
         try {
@@ -225,10 +271,6 @@ public:
         return current;
     }
 
-    void TESTROTATERIGHT() {
-        RotateRight(root);
-    }
-
     bool Contains(const T& value) const {
         if (root == nullptr)
             return false;
@@ -367,26 +409,6 @@ public:
             Rebalance(current->parent->right);
     }
 
-    void TESTROTATELEFTROOT() {
-        RotateLeft(root);
-    }
-
-    void TESTROTATELEFTRIGHT() {
-        RotateLeft(root->right);
-    }
-
-    void TESTROTATE() {
-        RotateRight(root);
-    }
-
-    void TESTROTATERIGHTLEFT() {
-        RotateRight(root->left);
-    }
-
-    void TESTROTATERIGHTRIGHT() {
-        RotateRight(root->right);
-    }
-
     void MakeTree(Node *node, const Node *other_tree_node) const {
         if (other_tree_node->left == nullptr && other_tree_node->right == nullptr) {
             return;
@@ -432,13 +454,6 @@ public:
         if (size == 0 && root == nullptr)
             return true;
         return false;
-    }
-    
-    void InorderedTreeWalk(Node *x) const {
-        if (x != nullptr) {
-            InorderedTreeWalk(x->left);
-            InorderedTreeWalk(x->right);
-        }
     }
 
     void InorderedTreeWalkIterative(Node *current) const {
@@ -536,6 +551,88 @@ public:
         return result;
     }
 
+
+    BinaryTree FromString(std::string &str) const {
+        BinaryTree result_tree;
+        size_t pos = 0;
+        Node *new_root = Deserialize(str, pos, nullptr);
+        
+        result_tree.root = new_root;
+        result_tree.size = CountNodes(new_root);
+
+        return result_tree;
+    }
+
+    Node* Deserialize(const std::string &str, size_t &pos, Node *parent) const {
+        if (pos >= str.size())
+            throw std::invalid_argument("position larger than size of string");
+        Node *node = nullptr;
+        if (str[pos] == '#') {
+            pos++;
+            return node;
+        }
+
+        std::string result_v;
+        if (isdigit(str[pos]) || str[pos] == '-') {
+            if (str[pos] == '-') {
+                result_v += '-';
+                pos++;
+            }
+                
+            while (pos < str.size() && isdigit(str[pos])) {
+                result_v += str[pos];
+                pos++;
+            }
+
+            T value = std::stoi(result_v);
+            
+            node = new Node(value);
+            node->parent = parent;
+        }
+
+        if (pos < str.size() && str[pos] == '(') {
+            pos++;
+            node->left = Deserialize(str, pos, node);
+        }
+
+        if (pos < str.size() && str[pos] == ',') {
+            pos++;
+            node->right = Deserialize(str, pos, node);
+        }
+    
+        if (pos >= str.size() || str[pos] != ')')
+            throw std::invalid_argument("Expected ')'");
+        pos++;
+        node->height = 1 + std::max(GetHeight(node->left), GetHeight(node->right));
+        return node;
+    }
+
+    std::string ToString() const {
+        std::string result;
+        Serialize(root, result); 
+        return result;
+    }
+
+    void Serialize(const Node *node, std::string &result) const {
+        if (node == nullptr) {
+            result += "#";
+            return;
+        }
+
+        result += std::to_string(node->value);
+        result += "(";
+        
+        Serialize(node->left, result);
+        result += ",";
+        Serialize(node->right, result);
+
+        result += ")";
+    }
+
+    Enumerator GetEnumerator() const {
+        return Enumerator(root);
+    }
+
     void Clear() {
         Clear(root);
         size = 0;
@@ -545,8 +642,7 @@ public:
     ~BinaryTree() {
         Clear(root);
     }
-
-
 };
 
 #endif /* BINARY_TREE_HPP */
+

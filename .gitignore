@@ -5,3 +5,5 @@ main
 tests_run
 build/
 *.dSYM/
+visualizer
+font.ttf

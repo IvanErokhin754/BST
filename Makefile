@@ -72,6 +72,23 @@ leaks-test:
 		$(TEST_SRC) $(GTEST_FLAGS) -o $(TEST_BIN)
 	MallocStackLogging=1 leaks --atExit -- ./$(TEST_BIN)
 
+# ---------- SFML -----------
+
+SFML_PATH := $(shell brew --prefix sfml)
+
+SFML_CFLAGS := -I$(SFML_PATH)/include
+
+SFML_LIBS := -L$(SFML_PATH)/lib \
+             -lsfml-graphics \
+             -lsfml-window \
+             -lsfml-system
+
+
+visualizer: visualizer.cpp
+	$(CXX) $(CXXFLAGS) $(SFML_CFLAGS) visualizer.cpp -o visualizer $(SFML_LIBS)
+
+run-visualizer: visualizer
+	./visualizer
 
 # ---------- CLEAN ----------
 
