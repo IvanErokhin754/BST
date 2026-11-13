@@ -169,6 +169,7 @@ int main() {
                             message = "Removed: " + std::to_string(value);
                         }
 
+                        delete it;
                         it = tree.GetEnumerator();
                         highlighted.reset();
                     }
@@ -215,7 +216,11 @@ int main() {
                  status.c_str());
 
         window.display();
+
+        
     }
+
+    delete it;
 
     return 0;
 }
