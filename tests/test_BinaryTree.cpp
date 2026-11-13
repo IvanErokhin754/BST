@@ -1352,6 +1352,8 @@ TEST(BinaryTreeTest, EnumeratorEmpty) {
 
     EXPECT_TRUE(tree.IsEmpty());
     EXPECT_FALSE(it->HasNext());
+
+    delete it;
 }
 
 TEST(BinaryTreeTest, EnumeratorSingleNode) {
@@ -1363,6 +1365,8 @@ TEST(BinaryTreeTest, EnumeratorSingleNode) {
 
     EXPECT_EQ(it->Next(), 10);
     EXPECT_FALSE(it->HasNext());
+
+    delete it;
 }
 
 TEST(BinaryTreeTest, EnumeratorBalanced) {
@@ -1385,6 +1389,8 @@ TEST(BinaryTreeTest, EnumeratorBalanced) {
     EXPECT_EQ(it->Next(), 80);
 
     EXPECT_FALSE(it->HasNext());
+
+    delete it;
 }
 
 TEST(BinaryTreeTest, EnumeratorAfterRotation) {
@@ -1405,6 +1411,8 @@ TEST(BinaryTreeTest, EnumeratorAfterRotation) {
     EXPECT_EQ(it->Next(), 50);
 
     EXPECT_FALSE(it->HasNext());
+
+    delete it;
 }
 
 TEST(BinaryTreeTest, EnumeratorEnd) {
@@ -1423,4 +1431,6 @@ TEST(BinaryTreeTest, EnumeratorEnd) {
     EXPECT_FALSE(it->HasNext());
 
     EXPECT_THROW(it->Next(), std::out_of_range);
+
+    delete it;
 }

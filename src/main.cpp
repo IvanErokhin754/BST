@@ -22,5 +22,7 @@ int main()
         std::cout << it->Next() << ' ';
     }
 
+    delete it;
+
     return 0;
 }

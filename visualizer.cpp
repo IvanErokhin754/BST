@@ -145,8 +145,8 @@ int main() {
                     input.pop_back();
                 }
 
-                else if (key->code == sf::Keyboard::Key::Space && mode == Mode::None && it.HasNext()) {
-                    highlighted = it.Next();
+                else if (key->code == sf::Keyboard::Key::Space && mode == Mode::None && it->HasNext()) {
+                    highlighted = it->Next();
                 }
 
                 else if (key->code == sf::Keyboard::Key::Enter && mode != Mode::None) {
