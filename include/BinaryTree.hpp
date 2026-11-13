@@ -7,9 +7,10 @@
 #include <algorithm>
 #include <string>
 #include "Stack.hpp"
+#include "IEnumerable.hpp"
 
 template<typename T>
-class BinaryTree {
+class BinaryTree : public IEnumerable<T> {
 private:
     struct Node {
         Node *left;
@@ -53,19 +54,19 @@ private:
     size_t size; 
 
 public:
-    class Enumerator {
+    class TreeEnumerator : public IEnumerator<T> {
         private:
             Node *current;
         public:
-            Enumerator() : current(nullptr) {}
-            Enumerator(Node *node) : current(node) {
+            TreeEnumerator() : current(nullptr) {}
+            TreeEnumerator(Node *node) : current(node) {
                 if (current != nullptr && current->left != nullptr)
                     while (current->left != nullptr) {
                         current = current->left;
                     }
             }
 
-            bool HasNext() {
+            bool HasNext() const {
                 return current != nullptr;
             }
 
@@ -263,6 +264,10 @@ public:
         
         Node *current = root;
         current = current->right;
+
+        if (current == nullptr) { 
+            return nullptr;
+        }
 
         while (current->left != nullptr) {
             current = current->left;
@@ -484,6 +489,8 @@ public:
     }
 
     BinaryTree Where(bool (*predicate)(const T&)) const {
+        if (predicate == nullptr)
+            throw std::invalid_argument("Where: Function is null");
         BinaryTree result;
         Stack<Node*> stack;
         Node *current = root;
@@ -507,6 +514,8 @@ public:
     }
 
     BinaryTree Map(T (*func)(const T&)) const {
+        if (func == nullptr)
+            throw std::invalid_argument("Map: Function is null");
         BinaryTree result;
         Stack<Node*> stack;
         Node *current = root;
@@ -529,7 +538,9 @@ public:
         return result;
     }
 
-    T Reduce(T (*func)(T, const T&), T initial) const {
+    T Reduce(T (*func)(const T&, T), T initial) const {
+        if (func == nullptr)
+            throw std::invalid_argument("Reduce: Function is null");
         T result = initial;
 
         Stack<Node*> stack;
@@ -543,7 +554,7 @@ public:
             else {
                 current = stack.Get();
                 stack.Pop();
-                result = func(result, current->value);
+                result = func(current->value, result);
                 current = current->right;
             }
         }
@@ -629,8 +640,8 @@ public:
         result += ")";
     }
 
-    Enumerator GetEnumerator() const {
-        return Enumerator(root);
+    IEnumerator<T> *GetEnumerator() const override {
+        return new TreeEnumerator(root);
     }
 
     void Clear() {

@@ -31,11 +31,11 @@ int Negate(const int &x) {
     return -x;
 }
 
-int Sum(int accumulator, const int& x) {
+int Sum(const int& x, int accumulator) {
     return accumulator + x;
 }
 
-int Mult(int accumulator, const int& x) {
+int Mult(const int& x, int accumulator) {
     return accumulator * x;
 }
 
@@ -1351,7 +1351,7 @@ TEST(BinaryTreeTest, EnumeratorEmpty) {
     auto it = tree.GetEnumerator();
 
     EXPECT_TRUE(tree.IsEmpty());
-    EXPECT_FALSE(it.HasNext());
+    EXPECT_FALSE(it->HasNext());
 }
 
 TEST(BinaryTreeTest, EnumeratorSingleNode) {
@@ -1361,8 +1361,8 @@ TEST(BinaryTreeTest, EnumeratorSingleNode) {
 
     auto it = tree.GetEnumerator();
 
-    EXPECT_EQ(it.Next(), 10);
-    EXPECT_FALSE(it.HasNext());
+    EXPECT_EQ(it->Next(), 10);
+    EXPECT_FALSE(it->HasNext());
 }
 
 TEST(BinaryTreeTest, EnumeratorBalanced) {
@@ -1376,15 +1376,15 @@ TEST(BinaryTreeTest, EnumeratorBalanced) {
 
     auto it = tree.GetEnumerator();
 
-    EXPECT_EQ(it.Next(), 20);
-    EXPECT_EQ(it.Next(), 30);
-    EXPECT_EQ(it.Next(), 40);
-    EXPECT_EQ(it.Next(), 50);
-    EXPECT_EQ(it.Next(), 60);
-    EXPECT_EQ(it.Next(), 70);
-    EXPECT_EQ(it.Next(), 80);
+    EXPECT_EQ(it->Next(), 20);
+    EXPECT_EQ(it->Next(), 30);
+    EXPECT_EQ(it->Next(), 40);
+    EXPECT_EQ(it->Next(), 50);
+    EXPECT_EQ(it->Next(), 60);
+    EXPECT_EQ(it->Next(), 70);
+    EXPECT_EQ(it->Next(), 80);
 
-    EXPECT_FALSE(it.HasNext());
+    EXPECT_FALSE(it->HasNext());
 }
 
 TEST(BinaryTreeTest, EnumeratorAfterRotation) {
@@ -1398,13 +1398,13 @@ TEST(BinaryTreeTest, EnumeratorAfterRotation) {
 
     auto it = tree.GetEnumerator();
 
-    EXPECT_EQ(it.Next(), 10);
-    EXPECT_EQ(it.Next(), 20);
-    EXPECT_EQ(it.Next(), 30);
-    EXPECT_EQ(it.Next(), 40);
-    EXPECT_EQ(it.Next(), 50);
+    EXPECT_EQ(it->Next(), 10);
+    EXPECT_EQ(it->Next(), 20);
+    EXPECT_EQ(it->Next(), 30);
+    EXPECT_EQ(it->Next(), 40);
+    EXPECT_EQ(it->Next(), 50);
 
-    EXPECT_FALSE(it.HasNext());
+    EXPECT_FALSE(it->HasNext());
 }
 
 TEST(BinaryTreeTest, EnumeratorEnd) {
@@ -1416,11 +1416,11 @@ TEST(BinaryTreeTest, EnumeratorEnd) {
 
     auto it = tree.GetEnumerator();
 
-    EXPECT_EQ(it.Next(), 10);
-    EXPECT_EQ(it.Next(), 20);
-    EXPECT_EQ(it.Next(), 30);
+    EXPECT_EQ(it->Next(), 10);
+    EXPECT_EQ(it->Next(), 20);
+    EXPECT_EQ(it->Next(), 30);
 
-    EXPECT_FALSE(it.HasNext());
+    EXPECT_FALSE(it->HasNext());
 
-    EXPECT_THROW(it.Next(), std::out_of_range);
+    EXPECT_THROW(it->Next(), std::out_of_range);
 }

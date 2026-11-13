@@ -18,8 +18,8 @@ int main()
 
     auto it = tree.GetEnumerator();
 
-    while (it.HasNext()) {
-        std::cout << it.Next() << ' ';
+    while (it->HasNext()) {
+        std::cout << it->Next() << ' ';
     }
 
     return 0;
